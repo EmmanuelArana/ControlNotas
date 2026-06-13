@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="ControlNotas.Business/ControlNotas.Business.csproj" />
+  <Project Path="ControlNotas.Common/ControlNotas.Common.csproj" />
+  <Project Path="ControlNotas.DataAccess/ControlNotas.DataAccess.csproj" />
+  <Project Path="ControlNotas.UI/ControlNotas.UI.csproj" />
+</Solution>

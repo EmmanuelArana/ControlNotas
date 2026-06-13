@@ -1,0 +1,32 @@
+# --- Visual Studio ---
+.vs/
+*.user
+*.suo
+*.cache
+*.log
+
+# --- Build ---
+bin/
+obj/
+Debug/
+Release/
+
+# --- Windows Forms specifics ---
+*.exe
+*.pdb
+*.dll
+
+# --- NuGet ---
+packages/
+*.nupkg
+project.lock.json
+
+# --- Otros archivos que no deben ir ---
+*.tmp
+*.bak
+*.db
+*.opendb
+*.ide
+
+# --- Configuración local ---
+*.local.json

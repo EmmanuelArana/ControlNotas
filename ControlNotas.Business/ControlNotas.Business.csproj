@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>ControlNotas</RootNamespace>
+    <AssemblyName>ControlNotas</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ControlNotas.Common\ControlNotas.Common.csproj" />
+    <ProjectReference Include="..\ControlNotas.DataAccess\ControlNotas.DataAccess.csproj" />
+  </ItemGroup>
+
+</Project>
