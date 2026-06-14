@@ -29,11 +29,11 @@
         private void InitializeComponent()
         {
             dgvTareas = new DataGridView();
-            panelInput = new TaskInputPanel();
             toggleCompletada = new ToggleSwitch();
             label1 = new Label();
             btnEliminar = new Button();
             lblStatus = new Label();
+            panelInput = new panelInput();
             ((System.ComponentModel.ISupportInitialize)dgvTareas).BeginInit();
             SuspendLayout();
             // 
@@ -49,14 +49,6 @@
             dgvTareas.Size = new Size(610, 309);
             dgvTareas.TabIndex = 0;
             dgvTareas.CellDoubleClick += dgvTareas_CellDoubleClick;
-            // 
-            // panelInput
-            // 
-            panelInput.Location = new Point(338, 351);
-            panelInput.Margin = new Padding(3, 5, 3, 5);
-            panelInput.Name = "panelInput";
-            panelInput.Size = new Size(456, 480);
-            panelInput.TabIndex = 1;
             // 
             // toggleCompletada
             // 
@@ -86,7 +78,7 @@
             // 
             // btnEliminar
             // 
-            btnEliminar.Location = new Point(34, 769);
+            btnEliminar.Location = new Point(77, 630);
             btnEliminar.Margin = new Padding(3, 4, 3, 4);
             btnEliminar.Name = "btnEliminar";
             btnEliminar.Size = new Size(86, 31);
@@ -103,17 +95,26 @@
             lblStatus.Size = new Size(0, 20);
             lblStatus.TabIndex = 5;
             // 
+            // panelInput
+            // 
+            panelInput.BackColor = SystemColors.ButtonHighlight;
+            panelInput.Location = new Point(327, 407);
+            panelInput.Margin = new Padding(3, 4, 3, 4);
+            panelInput.Name = "panelInput";
+            panelInput.Size = new Size(484, 254);
+            panelInput.TabIndex = 6;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = SystemColors.ButtonFace;
-            ClientSize = new Size(839, 847);
+            ClientSize = new Size(839, 704);
+            Controls.Add(panelInput);
             Controls.Add(lblStatus);
             Controls.Add(btnEliminar);
             Controls.Add(label1);
             Controls.Add(toggleCompletada);
-            Controls.Add(panelInput);
             Controls.Add(dgvTareas);
             Margin = new Padding(3, 4, 3, 4);
             Name = "MainForm";
@@ -127,10 +128,10 @@
         #endregion
 
         private DataGridView dgvTareas;
-        private TaskInputPanel panelInput;
         private ToggleSwitch toggleCompletada;
         private Label label1;
         private Button btnEliminar;
         private Label lblStatus;
+        private panelInput panelInput;
     }
 }
