@@ -65,6 +65,15 @@ namespace ControlNotas
             return _materiaRepository.ObtenerPorEstudiante(idEstudiante);
         }
 
+        // Indica si ya existe una materia con el mismo nombre para un estudiante (case-insensitive)
+        public bool ExisteMateriaParaEstudiante(int idEstudiante, string nombreMateria)
+        {
+            if (idEstudiante <= 0 || string.IsNullOrWhiteSpace(nombreMateria)) return false;
+            var lista = _materiaRepository.ObtenerPorEstudiante(idEstudiante) ?? new List<Materia>();
+            var nombre = nombreMateria.Trim();
+            return lista.Any(m => string.Equals((m.Nombre ?? string.Empty).Trim(), nombre, StringComparison.OrdinalIgnoreCase));
+        }
+
         // Modifica las notas de una materia. 
         public void ModificarNota(Materia materia)
         {

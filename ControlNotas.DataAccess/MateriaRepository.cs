@@ -11,6 +11,38 @@ namespace ControlNotas.DataAccess
         {
             // Establecemos la ruta del archivo para materias
             _ruta = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "materia.json");
+            // Normalizar almacenamiento: eliminar duplicados históricos (por estudiante + nombre normalizado)
+            try
+            {
+                NormalizeStorage();
+            }
+            catch
+            {
+                // si algo falla no bloqueamos la app; seguimos sin normalizar
+            }
+        }
+
+        // Elimina duplicados históricos en el archivo de materias.
+        private void NormalizeStorage()
+        {
+            if (!File.Exists(_ruta)) return;
+            var all = Leer();
+            var result = new List<Materia>();
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var m in all)
+            {
+                var key = m.IdEstudiante + "|" + (m.Nombre ?? string.Empty).Trim();
+                if (!seen.Contains(key))
+                {
+                    seen.Add(key);
+                    result.Add(m);
+                }
+            }
+
+            if (result.Count != all.Count)
+            {
+                Guardar(result);
+            }
         }
 
         private List<Materia> Leer()
@@ -49,12 +81,23 @@ namespace ControlNotas.DataAccess
         public void Insertar(Materia materia)
         { // Insertar materia nueva
             var lista = Leer();
+            // Evitar insertar más de una materia con el mismo nombre para un mismo estudiante
+            var nombreNormalizado = (materia.Nombre ?? string.Empty).Trim();
+            var existePorNombre = lista.Any(m => m.IdEstudiante == materia.IdEstudiante
+                                               && string.Equals((m.Nombre ?? string.Empty).Trim(), nombreNormalizado, StringComparison.OrdinalIgnoreCase));
+            if (existePorNombre)
+            {
+                // Ya existe una materia con el mismo nombre para este estudiante: no insertar
+                return;
+            }
             // Verificamos si la lista tiene al menos un elemento con el método Any()
             // De ser así: toma el elemento más alto con Max, y le suma 1 para el nuevo ID, de lo contrario
             // Si la lista está vacía, el id = 1
             materia.IdMateria = lista.Any() ? lista.Max(m => m.IdMateria) + 1 : 1;
             lista.Add(materia);
             Guardar(lista);
+            // Normalizar archivo tras insertar
+            NormalizeStorage();
         }
 
         public void Actualizar(Materia materia)
@@ -71,6 +114,8 @@ namespace ControlNotas.DataAccess
             existente.Parcial3 = materia.Parcial3;
 
             Guardar(lista); // Llamamos a Guardar, para escribir el archivo
+            // Normalizar archivo tras actualizar
+            NormalizeStorage();
         }
 
         public void Eliminar(int id)
@@ -86,7 +131,38 @@ namespace ControlNotas.DataAccess
         /// Método extra útil: Permite obtener todas las materias que le pertenecen a un estudiante en específico.
         public List<Materia> ObtenerPorEstudiante(int idEstudiante)
         {
-            return Leer().Where(m => m.IdEstudiante == idEstudiante).ToList();
+            var lista = Leer();
+            var estudiantesMaterias = lista.Where(m => m.IdEstudiante == idEstudiante).ToList();
+
+            // Eliminar duplicados existentes (mismo estudiante y mismo nombre normalizado),
+            // conservando la primera ocurrencia
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var duplicates = new List<Materia>();
+            foreach (var m in estudiantesMaterias)
+            {
+                var nombre = (m.Nombre ?? string.Empty).Trim();
+                if (seen.Contains(nombre))
+                {
+                    duplicates.Add(m);
+                }
+                else
+                {
+                    seen.Add(nombre);
+                }
+            }
+
+            if (duplicates.Count > 0)
+            {
+                // remover duplicados del listado general y guardar el archivo
+                foreach (var d in duplicates)
+                {
+                    var idx = lista.FindIndex(x => x.IdMateria == d.IdMateria);
+                    if (idx >= 0) lista.RemoveAt(idx);
+                }
+                Guardar(lista);
+            }
+
+            return lista.Where(m => m.IdEstudiante == idEstudiante).ToList();
         }
     }
 }

@@ -11,7 +11,8 @@ namespace ControlNotas.UI
 {
     public partial class panelInput : UserControl
     {
-        public event EventHandler<Estudiante>? GuardarSolicitado; // Declaracion de evento custom. Le envia al form el objeto tarea para que el form decida que hacer
+        public event EventHandler<Estudiante>? GuardarSolicitado; // antigua: guarda solo estudiante
+        public event EventHandler<StudentWithMateriaInput>? GuardarEstudianteMateria; // nuevo: guarda estudiante y materia
         public panelInput() // Constructor
         {
             InitializeComponent(); // Inicializar el componente custom (user control)
@@ -23,6 +24,27 @@ namespace ControlNotas.UI
             txtNombre.Text = estudiante.Nombre;
             txtApellido.Text = estudiante.Apellidos;
             txtNombre.Tag = estudiante.IdEstudiante; // Asignamos el id de la tarea a la propiedad Tag del textbox, para no crear una variable nueva
+        }
+
+        // Cargar tanto estudiante como materia para edición o creación
+        public void CargarStudentWithMateria(StudentWithMateriaInput payload)
+        {
+            if (payload == null) return;
+            txtNombre.Text = payload.Estudiante?.Nombre ?? string.Empty;
+            txtApellido.Text = payload.Estudiante?.Apellidos ?? string.Empty;
+            txtNombre.Tag = payload.Estudiante?.IdEstudiante ?? 0;
+
+            // Seleccionar materia en el combo si existe
+            if (!string.IsNullOrWhiteSpace(payload.Materia?.Nombre))
+            {
+                var idx = cmbMateria.Items.IndexOf(payload.Materia.Nombre);
+                if (idx >= 0) cmbMateria.SelectedIndex = idx;
+                else cmbMateria.Text = payload.Materia.Nombre; // permitir valor aunque no exista en la lista
+            }
+
+            txtParcial1.Text = payload.Materia?.Parcial1.ToString() ?? string.Empty;
+            txtParcial2.Text = payload.Materia?.Parcial2.ToString() ?? string.Empty;
+            txtParcial3.Text = payload.Materia?.Parcial3.ToString() ?? string.Empty;
         }
         private void TaskInputPanel_Load(object sender, EventArgs e)
         {
@@ -39,8 +61,43 @@ namespace ControlNotas.UI
                 Nombre = txtNombre.Text.Trim(), // Trim = eliminar espacios en blanco al inicio o al final del string 
                 Apellidos = txtApellido.Text.Trim(),
             };
+            // Leemos los datos de materia y parciales del control
+            var materia = new Materia();
+            materia.Nombre = cmbMateria.SelectedItem?.ToString() ?? string.Empty;
 
-            GuardarSolicitado?.Invoke(this, estudiante); // Enviamos al form el objeto tarea con la informacion completa
+            if (string.IsNullOrWhiteSpace(materia.Nombre))
+            {
+                lblError.Text = "Seleccione una materia.";
+                return;
+            }
+
+            if (!double.TryParse(txtParcial1.Text.Trim(), out var p1) || !double.TryParse(txtParcial2.Text.Trim(), out var p2) || !double.TryParse(txtParcial3.Text.Trim(), out var p3))
+            {
+                lblError.Text = "Ingrese valores numéricos válidos para las pruebas.";
+                return;
+            }
+
+            // Validar rangos básicos (1..100)
+            if (p1 < 1 || p1 > 100 || p2 < 1 || p2 > 100 || p3 < 1 || p3 > 100)
+            {
+                lblError.Text = "Las pruebas deben estar entre 1 y 100.";
+                return;
+            }
+
+            materia.Parcial1 = p1;
+            materia.Parcial2 = p2;
+            materia.Parcial3 = p3;
+            materia.IdEstudiante = estudiante.IdEstudiante;
+            var payload = new StudentWithMateriaInput
+            {
+                Estudiante = estudiante,
+                Materia = materia
+            };
+
+            // Disparamos solo el evento que contiene estudiante+y materia.
+            // Evitamos invocar GuardarSolicitado para prevenir guardados duplicados
+            // cuando el control se usa dentro de CreateStudentMateriaForm.
+            GuardarEstudianteMateria?.Invoke(this, payload);
         }
 
         public void btnLimpiar_Click(object sender, EventArgs e) 

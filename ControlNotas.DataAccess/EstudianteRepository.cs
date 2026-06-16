@@ -45,10 +45,28 @@ namespace ControlNotas.DataAccess
         public void Insertar(Estudiante estudiante)
         { //insertar tarea nueva
             var lista = Leer();
-            //verificamos si la lista tiene al menos un elemento con el metodo Any()
-            // De ser asi: toma el elemento mas alto con Max, y le suma 1 para el nuevo ID, de lo contrario
-            // Si la lista esta vacia, el id = 1
-            estudiante.IdEstudiante = lista.Any() ? lista.Max(e => e.IdEstudiante) + 1 : 1;
+
+            // Evitar colisión con IdEstudiante presentes en materia.json (entradas huérfanas)
+            int maxIdEstudiantes = lista.Any() ? lista.Max(e => e.IdEstudiante) : 0;
+            int maxIdEnMaterias = 0;
+            try
+            {
+                var rutaMaterias = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "materia.json");
+                if (File.Exists(rutaMaterias))
+                {
+                    var json = File.ReadAllText(rutaMaterias);
+                    var materias = JsonSerializer.Deserialize<List<ControlNotas.Common.Materia>>(json) ?? new List<ControlNotas.Common.Materia>();
+                    if (materias.Any()) maxIdEnMaterias = materias.Max(m => m.IdEstudiante);
+                }
+            }
+            catch
+            {
+                // ignorar errores de lectura de archivo
+            }
+
+            var nuevoId = Math.Max(maxIdEstudiantes, maxIdEnMaterias) + 1;
+            if (nuevoId <= 0) nuevoId = 1;
+            estudiante.IdEstudiante = nuevoId;
             lista.Add(estudiante);
             Guardar(lista);
         }
