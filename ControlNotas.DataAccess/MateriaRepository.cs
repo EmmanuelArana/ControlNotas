@@ -128,6 +128,21 @@ namespace ControlNotas.DataAccess
             Guardar(lista); // Escribimos al archivo la lista actualizada
         }
 
+        //Elimina las materias asociadas a un estudiante, por su ID. Se puede usar al eliminar un estudiante para evitar registros huérfanos.
+
+        public void EliminarPorEstudiante(int idEstudiante)
+        {
+            var lista = Leer();
+            var cantidadOriginal = lista.Count;
+
+            lista.RemoveAll(m => m.IdEstudiante == idEstudiante);
+
+            if (lista.Count != cantidadOriginal)
+            {
+                Guardar(lista);
+            }
+        }
+
         /// Método extra útil: Permite obtener todas las materias que le pertenecen a un estudiante en específico.
         public List<Materia> ObtenerPorEstudiante(int idEstudiante)
         {

@@ -10,13 +10,13 @@ namespace ControlNotas.UI
 {
     public partial class MainForm : Form
     {
-        private readonly EstudianteService _service; // acceso a estudiantes
+        private readonly EstudianteService _estudianteService; // acceso a estudiantes
         private readonly MateriaService _materiaService; // acceso a materias
 
         public MainForm() //Constructor
         {
             InitializeComponent(); 
-            _service = new EstudianteService();
+            _estudianteService = new EstudianteService();
             _materiaService = new MateriaService();
         }
 
@@ -81,7 +81,7 @@ namespace ControlNotas.UI
                     // Forzar Id = 0 para crear un nuevo estudiante (no actualizar uno seleccionado)
                     frm.ResultPayload.Estudiante.IdEstudiante = 0;
                     // Guardar estudiante primero
-                    _service.Guardar(frm.ResultPayload.Estudiante);
+                    _estudianteService.Guardar(frm.ResultPayload.Estudiante);
                     // Usar el Id asignado por el repositorio al objeto guardado
                     var id = frm.ResultPayload.Estudiante.IdEstudiante;
                     frm.ResultPayload.Materia.IdEstudiante = id;
@@ -158,7 +158,7 @@ namespace ControlNotas.UI
                 try
                 {
                     // Guardar/actualizar estudiante
-                    _service.Guardar(frm.ResultPayload.Estudiante);
+                    _estudianteService.Guardar(frm.ResultPayload.Estudiante);
 
                     // Asegurar que la materia mantiene su Id original para actualizar correctamente
                     var materiaAEditar = frm.ResultPayload.Materia;
@@ -233,7 +233,7 @@ namespace ControlNotas.UI
 
         private void CargarEstudiantes()
         {
-            var estudiantes = _service.ObtenerTodos();
+            var estudiantes = _estudianteService.ObtenerTodos();
             dgvEstudiantes.DataSource = null;
             dgvEstudiantes.DataSource = estudiantes;
 
@@ -348,7 +348,7 @@ namespace ControlNotas.UI
                 if (MessageBox.Show($"¿Eliminar a '{estudiante.Nombre} {estudiante.Apellidos}'?",
                     "Confirmar", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
-                    _service.Eliminar(estudiante.IdEstudiante);
+                    _estudianteService.Eliminar(estudiante.IdEstudiante);
                     CargarEstudiantes();
                     dgvMaterias.DataSource = null;
                     lblStatus.Text = "Estudiante eliminado!";

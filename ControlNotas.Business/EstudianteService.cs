@@ -66,36 +66,40 @@ namespace ControlNotas
         }
 
         // Elimina un estudiante. Valida que no tenga materias asociadas.
-        public bool EliminarEstudiante(int id, out string mensaje)
+        public void EliminarEstudiante(int id)
         {
+            Estudiante estudianteExistente;
             try
             {
-                var estudianteExistente = BuscarEstudiante(id);
-
-                // Usamos el método que creamos en MateriaRepository para ver si el alumno tiene materias asociadas
-                //Hacer un metodo que permita eliminar estudiantes y materias asociadas, pero primero se eliminan las materias y luego el estudiante. De esta forma no quedan registros huérfanos.
-                var materiasAsignadas = _materiaRepository.ObtenerPorEstudiante(id);
-
-                if (materiasAsignadas != null && materiasAsignadas.Count > 0)
-                {
-                    mensaje = $"No se puede eliminar al estudiante '{estudianteExistente.Nombre}'. " +
-                              $"Tiene {materiasAsignadas.Count} materia(s) registrada(s). " +
-                              $"Elimine primero sus materias para evitar registros huérfanos.";
-                    return false;
-                }
-
-                // 3. Si no tiene materias asignadas, se procede con la eliminación segura
-                _estudianteRepository.Eliminar(id);
-
-                mensaje = "Estudiante eliminado correctamente.";
-                return true;
+                estudianteExistente = BuscarEstudiante(id);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                mensaje = $"No se pudo eliminar al estudiante: {ex.Message}";
-                return false;
+                throw new BusinessException($"El estudiante con ID {id} no existe.", "ESTUDIANTE_NO_ENCONTRADO");
             }
+
+            var materiasAsignadas = _materiaRepository.ObtenerPorEstudiante(id);
+
+            if (materiasAsignadas != null && materiasAsignadas.Count > 0)
+            {
+                throw new BusinessException(
+                    $"No se puede eliminar al estudiante '{estudianteExistente.Nombre}'. " +
+                    $"Tiene {materiasAsignadas.Count} materia(s) registrada(s). " +
+                    $"Elimine primero sus materias para evitar registros huérfanos.",
+                    "ESTUDIANTE_CON_MATERIAS"
+                );
+            }
+
+            _estudianteRepository.Eliminar(id);
         }
-        public void Eliminar(int id) => _estudianteRepository.Eliminar(id); //Eliminamos la tarea.  El operador => nos reemplaza las llaves del metodo
+
+        public void Eliminar(int id)
+        {
+            // Estudiante es la entidad fuerte: al eliminarlo, eliminamos primero
+            // sus materias entidad débil para no dejar registros huérfanos.
+            _materiaRepository.EliminarPorEstudiante(id);
+
+            _estudianteRepository.Eliminar(id);
+        }
     }
 }
