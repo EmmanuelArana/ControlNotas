@@ -10,6 +10,6 @@ namespace ControlNotas.Common
         public int IdEstudiante { get; set; }
         public string Nombre { get; set; } = "";
         public string Apellidos { get; set; } = "";
-        public bool Estado { get; set; } = false; // Estados de un estudiante son "DESAPROVADO" en false | "APROVADO" en true
+        public bool Estado { get; set; } = false; // Estados de un estudiante son "Reprovado" | "Combocatoria" | "Aprobado"
     }
 }
